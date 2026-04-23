@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
+import com.example.chamster.ui.HamsterListActivity;
 import com.example.chamster.ui.LoginActivity;
 import com.example.chamster.ui.SettingsActivity;
 
@@ -26,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
         btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
+        });
+        btnAnimals.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, HamsterListActivity.class));
         });
     }
 }

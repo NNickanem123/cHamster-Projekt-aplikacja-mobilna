@@ -30,6 +30,8 @@
             </intent-filter>
 
         </activity>
+        <activity android:name=".ui.HamsterListActivity" />
+        <activity android:name=".ui.HamsterDetailsActivity" />
 
     </application>
 
