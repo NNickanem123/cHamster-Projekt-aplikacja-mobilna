@@ -13,15 +13,7 @@
         android:theme="@style/Theme.CHamster">
 
         <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".ui.LoginActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".MainActivity"
             android:exported="true">
 
             <intent-filter>
@@ -30,8 +22,10 @@
             </intent-filter>
 
         </activity>
-        <activity android:name=".ui.HamsterListActivity" />
-        <activity android:name=".ui.HamsterDetailsActivity" />
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="false" />
 
     </application>
 

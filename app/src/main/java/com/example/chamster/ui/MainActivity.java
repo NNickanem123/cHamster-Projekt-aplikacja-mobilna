@@ -1,13 +1,9 @@
-package com.example.chamster;
+package com.example.chamster.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 
-import com.example.chamster.ui.HamsterListActivity;
-import com.example.chamster.ui.LoginActivity;
-import com.example.chamster.ui.SettingsActivity;
+import com.example.chamster.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,20 +12,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btnAnimals = findViewById(R.id.btnAnimals);
-        Button btnSettings = findViewById(R.id.btnSettings);
-
-        btnAnimals.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-        });
-
-        btnSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
-        });
-        btnAnimals.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, HamsterListActivity.class));
-        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainerView, new MainFragment())
+                    .commit();
+        }
     }
 }

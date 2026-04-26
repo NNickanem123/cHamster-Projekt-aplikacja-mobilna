@@ -3,11 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:gravity="center"
+    android:padding="24dp">
 
-    <RecyclerView
-        android:id="@+id/recyclerAnimals"
+    <Button
+        android:id="@+id/btnAnimals"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:text="Lista zwierząt" />
 
 </LinearLayout>

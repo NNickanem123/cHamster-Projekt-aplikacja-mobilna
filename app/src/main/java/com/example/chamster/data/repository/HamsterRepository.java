@@ -1,6 +1,6 @@
 package com.example.chamster.data;
 
-import com.example.chamster.model.HamsterItem;
+import com.example.chamster.data.model.HamsterItem;
 import java.util.ArrayList;
 import java.util.List;
 
