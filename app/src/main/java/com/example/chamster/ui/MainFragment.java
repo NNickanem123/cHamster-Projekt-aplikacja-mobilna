@@ -8,12 +8,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.chamster.R;
+import com.example.chamster.data.BalanceManager;
 import com.example.chamster.data.SkinManager;
 
 import java.io.InputStream;
@@ -34,8 +37,13 @@ public class MainFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        TextView tvBalance = view.findViewById(R.id.tvBalance);
+        int balance = BalanceManager.getBalance(requireContext());
+        tvBalance.setText("Saldo: " + balance + " zł");
+
         FrameLayout container = view.findViewById(R.id.mainContainer);
         Button btnAnimals = view.findViewById(R.id.btnAnimals);
+        Button btnRace = view.findViewById(R.id.btnRace);
 
         container.removeAllViews();
 
@@ -82,5 +90,19 @@ public class MainFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
+        btnRace.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "🏁 Wyścigi już wkrótce!", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        View view = getView();
+        if (view != null) {
+            TextView tvBalance = view.findViewById(R.id.tvBalance);
+            int balance = BalanceManager.getBalance(requireContext());
+            tvBalance.setText("Saldo: " + balance + " zł");
+        }
     }
 }

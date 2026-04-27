@@ -7,6 +7,15 @@
     android:gravity="center_horizontal"
     android:padding="24dp">
 
+    <TextView
+        android:id="@+id/tvBalance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Saldo: 1000 zł"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
     <FrameLayout
         android:id="@+id/mainContainer"
         android:layout_width="250dp"
@@ -25,5 +34,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Lista zwierząt" />
+
+    <Button
+        android:id="@+id/btnRace"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🏁 Wyścigi"
+        android:layout_marginTop="12dp" />
 
 </LinearLayout>
