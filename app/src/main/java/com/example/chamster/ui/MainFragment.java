@@ -91,7 +91,11 @@ public class MainFragment extends Fragment {
                     .commit();
         });
         btnRace.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "🏁 Wyścigi już wkrótce!", Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainerView, new RaceFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
