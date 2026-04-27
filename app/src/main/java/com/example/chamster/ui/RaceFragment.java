@@ -17,12 +17,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.chamster.R;
-import com.example.chamster.data.BalanceManager;
+import com.example.chamster.data.DataManager;
 import com.example.chamster.data.RaceEngine;
-import com.example.chamster.data.SkinManager;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RaceFragment extends Fragment {
@@ -49,8 +47,8 @@ public class RaceFragment extends Fragment {
         tvResult = view.findViewById(R.id.tvRaceResult);
         Button btnStart = view.findViewById(R.id.btnStartRace);
 
-        List<String> accessories = SkinManager.loadAccessories(requireContext());
-        String baseSkin = SkinManager.loadBaseSkin(requireContext());
+        List<String> accessories = DataManager.getAccessories();
+        String baseSkin = DataManager.getBaseSkin();
         useMyHamster = !baseSkin.equals("hamster/chomik.png") || !accessories.isEmpty();
 
         LinearLayout llMyHamster = view.findViewById(R.id.llMyHamster);
@@ -87,7 +85,7 @@ public class RaceFragment extends Fragment {
     }
 
     private void updateBalanceDisplay() {
-        int balance = BalanceManager.getBalance(requireContext());
+        int balance = DataManager.getBalance();
         tvBalance.setText("Saldo: " + balance + " zł");
     }
 
@@ -116,13 +114,13 @@ public class RaceFragment extends Fragment {
             return;
         }
 
-        int currentBalance = BalanceManager.getBalance(requireContext());
+        int currentBalance = DataManager.getBalance();
         if (totalBet > currentBalance) {
             Toast.makeText(requireContext(), "Nie masz tyle złota! Masz: " + currentBalance + " zł", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        BalanceManager.removeBalance(requireContext(), totalBet);
+        DataManager.removeBalance(totalBet);
         updateBalanceDisplay();
 
         int winner = RaceEngine.runRace(useMyHamster);
@@ -132,7 +130,7 @@ public class RaceFragment extends Fragment {
 
         if (bets[winner] > 0) {
             winnings = RaceEngine.calculateWinnings(bets[winner], winner, useMyHamster);
-            BalanceManager.addBalance(requireContext(), winnings);
+            DataManager.addBalance(winnings);
             won = true;
         }
 

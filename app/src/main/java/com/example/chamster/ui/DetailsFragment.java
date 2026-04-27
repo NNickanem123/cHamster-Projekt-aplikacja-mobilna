@@ -8,13 +8,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.chamster.R;
-import com.example.chamster.data.SkinManager;
+import com.example.chamster.data.DataManager;
 import com.example.chamster.data.model.HamsterItem;
 
 import java.io.InputStream;
@@ -40,11 +41,20 @@ public class DetailsFragment extends Fragment {
 
         TextView title = view.findViewById(R.id.textViewTitle);
         TextView description = view.findViewById(R.id.textViewDescription);
+        TextView price = view.findViewById(R.id.textViewPrice);
         ImageView image = view.findViewById(R.id.imageViewHamster);
         Button btnSet = view.findViewById(R.id.btnSetSkin);
+        Button btnBuy = view.findViewById(R.id.btnBuySkin);
 
         title.setText(item.getName());
         description.setText(item.getDescription());
+
+        if (item.getPrice() > 0) {
+            price.setText("Cena: " + item.getPrice() + " zł");
+            price.setVisibility(View.VISIBLE);
+        } else {
+            price.setVisibility(View.GONE);
+        }
 
         try {
             InputStream is = requireContext().getAssets().open(item.getImagePath());
@@ -54,20 +64,36 @@ public class DetailsFragment extends Fragment {
             e.printStackTrace();
         }
 
-        boolean isAccessory =
-                item.getName().equals("Aureola") ||
-                        item.getName().equals("Korona") ||
-                        item.getName().equals("Czapka") ||
-                        item.getName().equals("Okulary") ||
-                        item.getName().equals("Peleryna") ||
-                        item.getName().equals("Skrzydła");
+        boolean isOwned = DataManager.isSkinOwned(item.getImagePath());
+        boolean isAccessory = isAccessory(item.getName());
+
+        if (isOwned || item.getPrice() == 0) {
+            btnBuy.setVisibility(View.GONE);
+            btnSet.setVisibility(View.VISIBLE);
+        } else {
+            btnBuy.setVisibility(View.VISIBLE);
+            btnSet.setVisibility(View.GONE);
+        }
+
+        btnBuy.setOnClickListener(v -> {
+            int balance = DataManager.getBalance();
+            if (balance >= item.getPrice()) {
+                DataManager.removeBalance(item.getPrice());
+                DataManager.addOwnedSkin(item.getImagePath());
+                Toast.makeText(requireContext(), "Kupiono " + item.getName() + "!", Toast.LENGTH_SHORT).show();
+
+                btnBuy.setVisibility(View.GONE);
+                btnSet.setVisibility(View.VISIBLE);
+            } else {
+                Toast.makeText(requireContext(), "Brak złota! Potrzebujesz: " + item.getPrice() + " zł", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         btnSet.setOnClickListener(v -> {
-
             if (isAccessory) {
-                SkinManager.toggleAccessory(requireContext(), item.getImagePath());
+                DataManager.toggleAccessory(item.getImagePath());
             } else {
-                SkinManager.saveBaseSkin(requireContext(), item.getImagePath());
+                DataManager.setBaseSkin(item.getImagePath());
             }
 
             requireActivity().getSupportFragmentManager()
@@ -75,5 +101,11 @@ public class DetailsFragment extends Fragment {
                     .replace(R.id.fragmentContainerView, new MainFragment())
                     .commit();
         });
+    }
+
+    private boolean isAccessory(String name) {
+        return name.equals("Aureola") || name.equals("Korona") ||
+                name.equals("Czapka") || name.equals("Okulary") ||
+                name.equals("Peleryna") || name.equals("Skrzydła");
     }
 }

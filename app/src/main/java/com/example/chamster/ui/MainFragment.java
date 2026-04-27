@@ -9,15 +9,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.chamster.R;
-import com.example.chamster.data.BalanceManager;
-import com.example.chamster.data.SkinManager;
+import com.example.chamster.data.DataManager;
 
 import java.io.InputStream;
 import java.util.List;
@@ -38,7 +36,7 @@ public class MainFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         TextView tvBalance = view.findViewById(R.id.tvBalance);
-        int balance = BalanceManager.getBalance(requireContext());
+        int balance = DataManager.getBalance();
         tvBalance.setText("Saldo: " + balance + " zł");
 
         FrameLayout container = view.findViewById(R.id.mainContainer);
@@ -54,7 +52,7 @@ public class MainFragment extends Fragment {
         ));
 
         try {
-            InputStream is = requireContext().getAssets().open(SkinManager.loadBaseSkin(requireContext()));
+            InputStream is = requireContext().getAssets().open(DataManager.getBaseSkin());
             Drawable d = Drawable.createFromStream(is, null);
             base.setImageDrawable(d);
         } catch (Exception e) {
@@ -63,7 +61,7 @@ public class MainFragment extends Fragment {
 
         container.addView(base);
 
-        List<String> accessories = SkinManager.loadAccessories(requireContext());
+        List<String> accessories = DataManager.getAccessories();
 
         for (String acc : accessories) {
             ImageView layer = new ImageView(requireContext());
@@ -90,6 +88,7 @@ public class MainFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
+
         btnRace.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
@@ -105,7 +104,7 @@ public class MainFragment extends Fragment {
         View view = getView();
         if (view != null) {
             TextView tvBalance = view.findViewById(R.id.tvBalance);
-            int balance = BalanceManager.getBalance(requireContext());
+            int balance = DataManager.getBalance();
             tvBalance.setText("Saldo: " + balance + " zł");
         }
     }
