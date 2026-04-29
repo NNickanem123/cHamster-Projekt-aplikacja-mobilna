@@ -35,14 +35,25 @@ public class MainFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        updateBalanceDisplay(view);
+        setupHamsterDisplay(view);
+        setupButtons(view);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        View view = getView();
+        if (view != null) updateBalanceDisplay(view);
+    }
+
+    private void updateBalanceDisplay(View view) {
         TextView tvBalance = view.findViewById(R.id.tvBalance);
-        int balance = DataManager.getBalance();
-        tvBalance.setText("Saldo: " + balance + " zł");
+        tvBalance.setText("Saldo: " + DataManager.getBalance() + " zł");
+    }
 
+    private void setupHamsterDisplay(View view) {
         FrameLayout container = view.findViewById(R.id.mainContainer);
-        Button btnAnimals = view.findViewById(R.id.btnAnimals);
-        Button btnRace = view.findViewById(R.id.btnRace);
-
         container.removeAllViews();
 
         ImageView base = new ImageView(requireContext());
@@ -50,62 +61,42 @@ public class MainFragment extends Fragment {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         ));
-
-        try {
-            InputStream is = requireContext().getAssets().open(DataManager.getBaseSkin());
-            Drawable d = Drawable.createFromStream(is, null);
-            base.setImageDrawable(d);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        setImageViewDrawable(base, DataManager.getBaseSkin());
         container.addView(base);
 
-        List<String> accessories = DataManager.getAccessories();
-
-        for (String acc : accessories) {
+        for (String acc : DataManager.getAccessories()) {
             ImageView layer = new ImageView(requireContext());
             layer.setLayoutParams(new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
             ));
-
-            try {
-                InputStream is = requireContext().getAssets().open(acc);
-                Drawable d = Drawable.createFromStream(is, null);
-                layer.setImageDrawable(d);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            setImageViewDrawable(layer, acc);
             container.addView(layer);
         }
-
-        btnAnimals.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainerView, new ListFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        btnRace.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainerView, new RaceFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        View view = getView();
-        if (view != null) {
-            TextView tvBalance = view.findViewById(R.id.tvBalance);
-            int balance = DataManager.getBalance();
-            tvBalance.setText("Saldo: " + balance + " zł");
+    private void setupButtons(View view) {
+        Button btnAnimals = view.findViewById(R.id.btnAnimals);
+        Button btnRace = view.findViewById(R.id.btnRace);
+
+        btnAnimals.setOnClickListener(v -> navigateTo(new ListFragment()));
+        btnRace.setOnClickListener(v -> navigateTo(new RaceFragmentAnimated()));
+    }
+
+    private void setImageViewDrawable(ImageView iv, String assetPath) {
+        try {
+            InputStream is = requireContext().getAssets().open(assetPath);
+            iv.setImageDrawable(Drawable.createFromStream(is, null));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    private void navigateTo(Fragment fragment) {
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainerView, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }
