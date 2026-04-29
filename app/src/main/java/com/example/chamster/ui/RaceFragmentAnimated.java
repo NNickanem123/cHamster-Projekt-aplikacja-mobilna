@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +40,7 @@ public class RaceFragmentAnimated extends Fragment {
     private boolean useMyHamster = false;
     private RaceTrackView raceTrackView;
     private Button btnStart;
+    private RadioGroup rgTrackType;
 
     @Nullable
     @Override
@@ -57,6 +59,12 @@ public class RaceFragmentAnimated extends Fragment {
         tvStatus = view.findViewById(R.id.tvRaceStatus);
         raceTrackView = view.findViewById(R.id.raceTrackView);
         btnStart = view.findViewById(R.id.btnStartRace);
+        rgTrackType = view.findViewById(R.id.rgTrackType);
+
+        rgTrackType.setOnCheckedChangeListener((group, checkedId) -> {
+            String trackType = checkedId == R.id.rbStraight ? "straight" : "curved";
+            raceTrackView.setTrackType(trackType);
+        });
 
         setupCheckbox(view);
         setupBetInputs(view);
@@ -119,6 +127,8 @@ public class RaceFragmentAnimated extends Fragment {
     private void startRace() {
         if (raceTrackView.isRacing()) return;
 
+        DataManager.checkAndResetBalance();
+
         int totalBet = collectBets();
         if (totalBet == 0) {
             Toast.makeText(requireContext(), "Postaw przynajmniej jeden zakład!", Toast.LENGTH_SHORT).show();
@@ -145,6 +155,8 @@ public class RaceFragmentAnimated extends Fragment {
             participants.add(new RaceTrackView.RaceParticipant(NAMES[i], null, combinedBitmaps[i], (float) speeds[i]));
         }
 
+        String trackType = rgTrackType.getCheckedRadioButtonId() == R.id.rbStraight ? "straight" : "curved";
+        raceTrackView.setTrackType(trackType);
         raceTrackView.setParticipants(participants, useMyHamster);
         raceTrackView.startRace(() -> finishRace(raceTrackView.getWinnerIndex(), finalTotalBet));
     }

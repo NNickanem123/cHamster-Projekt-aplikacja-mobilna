@@ -40,12 +40,14 @@ public class DataManager {
 
     public static void addBalance(int amount) {
         prefs.edit().putInt(getKey("balance"), getBalance() + amount).apply();
+        checkAndResetBalance();
     }
 
     public static boolean removeBalance(int amount) {
         int current = getBalance();
         if (current >= amount) {
             prefs.edit().putInt(getKey("balance"), current - amount).apply();
+            checkAndResetBalance();
             return true;
         }
         return false;
@@ -93,5 +95,10 @@ public class DataManager {
         JSONArray arr = new JSONArray();
         for (String s : list) arr.put(s);
         prefs.edit().putString(getKey("accessories"), arr.toString()).apply();
+    }
+    public static void checkAndResetBalance() {
+        if (getBalance() <= 0) {
+            prefs.edit().putInt(getKey("balance"), 1000).apply();
+        }
     }
 }

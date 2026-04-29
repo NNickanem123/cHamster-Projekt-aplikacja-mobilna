@@ -14,7 +14,6 @@ import java.util.List;
 public class RaceTrackView extends View {
 
     private Paint lanePaint;
-    private Paint textPaint;
     private List<RaceParticipant> participants;
     private float trackWidth;
     private float trackHeight;
@@ -26,6 +25,7 @@ public class RaceTrackView extends View {
     private Runnable onRaceFinishCallback;
     private int winnerIndex = -1;
     private boolean useMyHamster = false;
+    private String trackType = "straight";
 
     public RaceTrackView(Context context) {
         super(context);
@@ -41,15 +41,17 @@ public class RaceTrackView extends View {
         lanePaint = new Paint();
         lanePaint.setColor(Color.WHITE);
         lanePaint.setStrokeWidth(3);
-
-        textPaint = new Paint();
-        textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(12);
+        lanePaint.setAntiAlias(true);
     }
 
     public void setParticipants(List<RaceParticipant> participants, boolean useMyHamster) {
         this.participants = participants;
         this.useMyHamster = useMyHamster;
+        invalidate();
+    }
+
+    public void setTrackType(String type) {
+        this.trackType = type;
         invalidate();
     }
 
@@ -60,23 +62,30 @@ public class RaceTrackView extends View {
         isRacing = true;
         winnerIndex = -1;
 
-        float raceDistance = finishLineX - startX;
+        final float maxDistance;
+        final boolean isCurved = "curved".equals(trackType);
+
+        if (isCurved) {
+            maxDistance = 360f;
+        } else {
+            maxDistance = finishLineX - startX;
+        }
 
         for (RaceParticipant p : participants) {
             p.setX(0);
         }
 
-        animator = ValueAnimator.ofFloat(0, raceDistance);
+        animator = ValueAnimator.ofFloat(0, maxDistance);
         animator.setDuration(5000);
         animator.addUpdateListener(animation -> {
-            float distance = (float) animation.getAnimatedValue();
+            float value = (float) animation.getAnimatedValue();
 
             for (int i = 0; i < participants.size(); i++) {
                 RaceParticipant p = participants.get(i);
-                float progress = distance / raceDistance;
-                float pDistance = p.getSpeed() * progress * raceDistance;
-                if (pDistance > raceDistance) {
-                    pDistance = raceDistance;
+                float progress = value / maxDistance;
+                float pDistance = p.getSpeed() * progress * maxDistance;
+                if (pDistance > maxDistance) {
+                    pDistance = maxDistance;
                 }
                 p.setX(pDistance);
             }
@@ -84,7 +93,7 @@ public class RaceTrackView extends View {
             invalidate();
 
             for (int i = 0; i < participants.size(); i++) {
-                if (participants.get(i).getX() >= raceDistance && winnerIndex == -1) {
+                if (participants.get(i).getX() >= maxDistance && winnerIndex == -1) {
                     winnerIndex = i;
                 }
             }
@@ -124,31 +133,74 @@ public class RaceTrackView extends View {
 
         canvas.drawColor(Color.parseColor("#2d5016"));
 
-        for (int i = 0; i <= numLanes; i++) {
-            float y = i * laneHeight;
-            canvas.drawLine(0, y, trackWidth, y, lanePaint);
+        if ("straight".equals(trackType)) {
+            drawStraightTrack(canvas, numLanes);
+            canvas.drawLine(startX, 0, startX, trackHeight, lanePaint);
+            canvas.drawLine(finishLineX, 0, finishLineX, trackHeight, lanePaint);
+        } else {
+            drawCurvedTrack(canvas, numLanes);
         }
-
-        canvas.drawLine(startX, 0, startX, trackHeight, lanePaint);
-        canvas.drawLine(finishLineX, 0, finishLineX, trackHeight, lanePaint);
 
         if (participants != null) {
             for (int i = 0; i < participants.size(); i++) {
                 RaceParticipant p = participants.get(i);
-                float y = i * laneHeight + laneHeight / 2;
-                float x = startX + p.getX();
-
+                float x, y;
                 float size = 67;
 
-                if (p.getCombinedBitmap() != null && !p.getCombinedBitmap().isRecycled()) {
-                    Bitmap scaled = Bitmap.createScaledBitmap(p.getCombinedBitmap(), (int)size, (int)size, true);
-                    canvas.drawBitmap(scaled, x - size/2, y - size/2, null);
-                } else if (p.getBitmap() != null && !p.getBitmap().isRecycled()) {
-                    Bitmap scaled = Bitmap.createScaledBitmap(p.getBitmap(), (int)size, (int)size, true);
-                    canvas.drawBitmap(scaled, x - size/2, y - size/2, null);
+                if ("curved".equals(trackType)) {
+                    float centerX = trackWidth / 2;
+                    float centerY = trackHeight / 2;
+                    float maxRadius = Math.min(trackWidth, trackHeight) / 2 - 50;
+                    float radius = maxRadius - i * 30;
+                    if (radius < 20) radius = 20;
+                    float angle = (float) (p.getX() * Math.PI * 2 / 360);
+                    x = centerX + (float) Math.cos(angle - Math.PI / 2) * radius;
+                    y = centerY + (float) Math.sin(angle - Math.PI / 2) * radius;
+                } else {
+                    float yPos = i * laneHeight + laneHeight / 2;
+                    x = startX + p.getX();
+                    y = yPos;
+                }
+
+                Bitmap bitmapToDraw = p.getCombinedBitmap() != null ? p.getCombinedBitmap() : p.getBitmap();
+
+                if (bitmapToDraw != null && !bitmapToDraw.isRecycled()) {
+                    Bitmap scaled = Bitmap.createScaledBitmap(bitmapToDraw, (int) size, (int) size, true);
+                    canvas.drawBitmap(scaled, x - size / 2, y - size / 2, null);
                 }
             }
         }
+    }
+
+    private void drawStraightTrack(Canvas canvas, int numLanes) {
+        for (int i = 0; i <= numLanes; i++) {
+            float y = i * laneHeight;
+            canvas.drawLine(0, y, trackWidth, y, lanePaint);
+        }
+    }
+
+    private void drawCurvedTrack(Canvas canvas, int numLanes) {
+        float centerX = trackWidth / 2;
+        float centerY = trackHeight / 2;
+        float maxRadius = Math.min(trackWidth, trackHeight) / 2 - 50;
+        float minRadius = maxRadius - (numLanes - 1) * 30;
+        if (minRadius < 20) minRadius = 20;
+
+        for (int i = 0; i < numLanes; i++) {
+            float radius = maxRadius - i * 30;
+            if (radius >= minRadius) {
+                canvas.drawCircle(centerX, centerY, radius, lanePaint);
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            float angle = (float) (i * Math.PI * 2 / 8);
+            float x2 = centerX + (float) Math.cos(angle) * maxRadius;
+            float y2 = centerY + (float) Math.sin(angle) * maxRadius;
+            canvas.drawLine(centerX, centerY, x2, y2, lanePaint);
+        }
+
+        canvas.drawCircle(centerX, centerY, 15, lanePaint);
     }
 
     public static class RaceParticipant {
